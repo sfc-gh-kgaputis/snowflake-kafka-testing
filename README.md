@@ -5,6 +5,7 @@ This repo is designed to help with local development and testing of the Kafka Co
 ## Dependencies
 - Docker
 - Docker Compose
+- bash (for commands below and helper shell scripts)
 - envsubst (for setting dynamic values in connector JSON definitions)
 - curl (for making API calls to Kafka Connect Rest API)
 - jq (for parsing JSON responses)
