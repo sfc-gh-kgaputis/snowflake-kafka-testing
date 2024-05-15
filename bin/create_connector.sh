@@ -14,7 +14,6 @@ fi
 
 # Substitute environment variables in the JSON template
 exported_json=$(envsubst < "$1")
-echo "${exported_json}"
 
 # Check if envsubst succeeded
 if [ $? -ne 0 ]; then

@@ -12,6 +12,7 @@
     "snowflake.url.name": "${SNOWFLAKE_HOST}:443",
     "snowflake.user.name": "${SNOWFLAKE_USER}",
     "snowflake.private.key": "${SNOWFLAKE_PRIVATE_KEY}",
+    "snowflake.private.key.passphrase": "${SNOWFLAKE_PASSPHRASE}",
     "snowflake.role.name": "${SNOWFLAKE_ROLE}",
     "buffer.count.records": "50000",
     "buffer.flush.time": "1",

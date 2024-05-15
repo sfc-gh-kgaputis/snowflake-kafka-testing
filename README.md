@@ -44,6 +44,7 @@ docker-compose down --volumes
 export SNOWFLAKE_HOST="myorganization-myaccount.snowflakecomputing.com"
 export SNOWFLAKE_USER="ingest"
 export SNOWFLAKE_PRIVATE_KEY="REDACTED"
+export SNOWFLAKE_PASSPHRASE="REDACTED"
 export SNOWFLAKE_ROLE="ingest"
 ```
 
