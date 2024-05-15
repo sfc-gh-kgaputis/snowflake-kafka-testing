@@ -1,0 +1,46 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+# Externally mounted JARs
+#connect_plugins/
+#connect_libs/
+
+# make sure connectors don't have hard-coded credentials
+#connectors/
+proto/java_client/
+proto/python_client/
+
+__pycache_
+
+target/
+
+# Docker-compose .env file
+.env
+# Container-specific env files
+connect.env
