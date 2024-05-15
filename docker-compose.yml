@@ -63,11 +63,9 @@ services:
     #    volumes:
     #      - ./connect_lib:/usr/share/java
     #      - ./connect_plugins:/opt/plugins
-    environment:
-      CONNECT_BOOTSTRAP_SERVERS: 'kafka:9092'
+    environment: #rely on connect-distributed.properties for broker info and creds
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
       CONNECT_REST_PORT: 8083
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_HEAP_OPTS: "-Xms1g -Xmx4g"
     env_file: connect.env
     depends_on:
