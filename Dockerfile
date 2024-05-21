@@ -43,7 +43,6 @@ COPY --from=kafka_dist /var/tmp/kafka_$SCALA_VERSION-$KAFKA_VERSION ${KAFKA_HOME
 
 RUN echo $pwd
 
-COPY connect-distributed.properties ${KAFKA_HOME}/config/
 COPY connect-log4j.properties ${KAFKA_HOME}/config/
 
 RUN chmod a+x ${KAFKA_HOME}/bin/*.sh
@@ -52,4 +51,7 @@ RUN mkdir -p /opt/plugins
 RUN mkdir -p /opt/extra-libs
 ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
 
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["/opt/kafka/bin/connect-distributed.sh", "/opt/kafka/config/connect-distributed.properties"]

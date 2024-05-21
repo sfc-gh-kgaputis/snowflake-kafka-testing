@@ -17,6 +17,7 @@ services:
     volumes:
       - ./connect_lib:/opt/extra-libs
       - ./connect_plugins:/opt/plugins
+      - ./connect-distributed.properties:/opt/kafka/config/connect-distributed.properties
     environment:
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
       CONNECT_REST_PORT: 8083
