@@ -24,6 +24,7 @@ RUN rm -r kafka_$SCALA_VERSION-$KAFKA_VERSION/bin/windows
 RUN wget https://repo1.maven.org/maven2/com/snowflake/snowflake-kafka-connector/2.2.2/snowflake-kafka-connector-2.2.2.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.2.4/bc-fips-1.0.2.4.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
+RUN wget https://github.com/sfc-gh-kgaputis/snowflake-kafka-smt-examples/raw/main/dist/snowflake-kafka-smt-examples-1.0-SNAPSHOT.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 
 FROM openjdk:11-jre-slim
 
@@ -45,10 +46,10 @@ RUN echo $pwd
 COPY connect-distributed.properties ${KAFKA_HOME}/config/
 COPY connect-log4j.properties ${KAFKA_HOME}/config/
 
-#COPY connect_lib/*  ${KAFKA_HOME}/libs/
-
 RUN chmod a+x ${KAFKA_HOME}/bin/*.sh
 
 RUN mkdir -p /opt/plugins
+RUN mkdir -p /opt/extra-libs
+ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
 
 CMD ["/opt/kafka/bin/connect-distributed.sh", "/opt/kafka/config/connect-distributed.properties"]

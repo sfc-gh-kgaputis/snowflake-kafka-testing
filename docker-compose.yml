@@ -3,53 +3,6 @@ networks:
   sfkafka_net:
     driver: bridge
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - sfkafka_net
-    ports:
-      - "2181:2181"
-    volumes:
-      - zookeeper_data:/var/lib/zookeeper/data
-      - zookeeper_datalog:/var/lib/zookeeper/log
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    depends_on:
-      - zookeeper
-    networks:
-      - sfkafka_net
-    ports:
-      - "29092:29092"
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_LOG_RETENTION_HOURS: 168  # Set default retention to 7 days
-    volumes:
-      - kafka_data:/var/lib/kafka/data
-  schema-registry:
-    image: confluentinc/cp-schema-registry:latest
-    depends_on:
-      - kafka
-    networks:
-      - sfkafka_net
-    environment:
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
-      SCHEMA_REGISTRY_BASIC_AUTH_CREDENTIALS_SOURCE: USER_INFO
-      SCHEMA_REGISTRY_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: test_user:Pa$$word # replace with your username and password
-    ports:
-      - "8081:8081"
   sf-kafka-connect:
     build:
       context: .
@@ -60,31 +13,19 @@ services:
       - sfkafka_net
     ports:
       - "8083:8083"
-    #    volumes:
-    #      - ./connect_lib:/usr/share/java
-    #      - ./connect_plugins:/opt/plugins
-    environment: #rely on connect-distributed.properties for broker info and creds
+      - "1099:1099"
+    volumes:
+      - ./connect_lib:/opt/extra-libs
+      - ./connect_plugins:/opt/plugins
+    environment:
       CONNECT_REST_ADVERTISED_HOST_NAME: connect
       CONNECT_REST_PORT: 8083
-      KAFKA_HEAP_OPTS: "-Xms1g -Xmx4g"
+      KAFKA_HEAP_OPTS: "-Xms8g -Xmx12g"
+    #      KAFKA_OPTS: "-Dcom.sun.management.jmxremote \
+    #-Dcom.sun.management.jmxremote.port=1099 \
+    #-Dcom.sun.management.jmxremote.rmi.port=1099 \
+    #-Dcom.sun.management.jmxremote.local.only=false \
+    #-Dcom.sun.management.jmxremote.authenticate=false \
+    #-Dcom.sun.management.jmxremote.ssl=false \
+    #-Djava.rmi.server.hostname=host.docker.internal"
     env_file: connect.env
-    depends_on:
-      - kafka
-      - zookeeper
-  kafdrop:
-    image: obsidiandynamics/kafdrop:latest
-    networks:
-      - sfkafka_net
-    ports:
-      - "9010:9000"
-    environment:
-      KAFKA_BROKERCONNECT: 'kafka:9092'
-      JVM_OPTS: '-Xms32M -Xmx64M'
-      SERVER_SERVLET_CONTEXTPATH: '/'
-    depends_on:
-      - kafka
-      - zookeeper
-volumes:
-  kafka_data:
-  zookeeper_data:
-  zookeeper_datalog:
