@@ -44,3 +44,5 @@ target/
 .env
 # Container-specific env files
 connect.env
+# Kafka Connect properties (will contain creds)
+connect-distributed.properties

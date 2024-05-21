@@ -12,9 +12,10 @@ This repo is designed to help with local development and testing of the Kafka Co
 
 
 ## Environment setup
-Populate the required environment files:
+Populate the required environment and config files:
 - `.env`
 - `connect.env`
+- `connect-distributed.properties`
 
 These are not included in version control, because they will change for each user/environment. 
 
