@@ -1,5 +1,5 @@
 {
-  "name": "snowflake_json_events2",
+  "name": "snowflake_json_events",
   "config": {
     "connector.class": "com.snowflake.kafka.connector.SnowflakeSinkConnector",
     "tasks.max": "1",
