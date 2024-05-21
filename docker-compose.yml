@@ -19,7 +19,8 @@ services:
       - ./connect_plugins:/opt/plugins
       - ./connect-distributed.properties:/opt/kafka/config/connect-distributed.properties
     environment:
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      #      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_REST_ADVERTISED_HOST_NAME: $HOSTNAME
       CONNECT_REST_PORT: 8083
       KAFKA_HEAP_OPTS: "-Xms8g -Xmx12g"
     #      KAFKA_OPTS: "-Dcom.sun.management.jmxremote \
