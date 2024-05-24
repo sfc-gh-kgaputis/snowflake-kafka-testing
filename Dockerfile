@@ -1,7 +1,7 @@
 FROM alpine:latest AS kafka_dist
 
-ARG SCALA_VERSION
-ARG KAFKA_VERSION
+ARG SCALA_VERSION=2.13
+ARG KAFKA_VERSION=3.6.2
 ARG KAFKA_DISTRO_BASE_URL=https://dlcdn.apache.org/kafka
 
 ENV kafka_distro=kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz
@@ -28,8 +28,15 @@ RUN wget https://github.com/sfc-gh-kgaputis/snowflake-kafka-smt-examples/raw/mai
 
 FROM openjdk:11-jre-slim
 
-ARG SCALA_VERSION
-ARG KAFKA_VERSION
+# Install any necessary utilities in one layer to keep the image clean and optimized
+RUN apt-get update && \
+    apt-get install -y \
+    jq \
+    # any other packages you might need
+    && rm -rf /var/lib/apt/lists/*
+
+ARG SCALA_VERSION=2.13
+ARG KAFKA_VERSION=3.6.2
 
 ENV KAFKA_VERSION=$KAFKA_VERSION \
     SCALA_VERSION=$SCALA_VERSION \
@@ -51,7 +58,11 @@ RUN mkdir -p /opt/plugins
 RUN mkdir -p /opt/extra-libs
 ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
+RUN mkdir -p /docker
+COPY docker/entrypoint.sh /docker/entrypoint.sh
+COPY docker/entrypoint_test.sh /docker/entrypoint_test.sh
+RUN chmod +x /docker/entrypoint.sh
+RUN chmod +x /docker/entrypoint_test.sh
+
+ENTRYPOINT ["/docker/entrypoint.sh"]
 CMD ["/opt/kafka/bin/connect-distributed.sh", "/opt/kafka/config/connect-distributed.properties"]

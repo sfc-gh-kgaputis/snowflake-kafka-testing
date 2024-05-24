@@ -17,17 +17,11 @@ services:
     volumes:
       - ./connect_lib:/opt/extra-libs
       - ./connect_plugins:/opt/plugins
-      - ./connect-distributed.properties:/opt/kafka/config/connect-distributed.properties
+      - ./connect-distributed.properties:/docker/connect-distributed-mounted.properties
     environment:
-      #      CONNECT_REST_ADVERTISED_HOST_NAME: connect
-      CONNECT_REST_ADVERTISED_HOST_NAME: $HOSTNAME
+      CONNECT_REST_ADVERTISED_HOST_NAME: ${HOSTNAME:-connect}
+      CONNECT_REST_ADVERTISED_PORT: 8083
+      CONNECT_LISTENERS: 'http://0.0.0.0:8083'
       CONNECT_REST_PORT: 8083
       KAFKA_HEAP_OPTS: "-Xms8g -Xmx12g"
-    #      KAFKA_OPTS: "-Dcom.sun.management.jmxremote \
-    #-Dcom.sun.management.jmxremote.port=1099 \
-    #-Dcom.sun.management.jmxremote.rmi.port=1099 \
-    #-Dcom.sun.management.jmxremote.local.only=false \
-    #-Dcom.sun.management.jmxremote.authenticate=false \
-    #-Dcom.sun.management.jmxremote.ssl=false \
-    #-Djava.rmi.server.hostname=host.docker.internal"
     env_file: connect.env
