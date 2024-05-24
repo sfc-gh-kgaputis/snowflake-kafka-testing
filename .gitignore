@@ -46,3 +46,5 @@ target/
 connect.env
 # Kafka Connect properties (will contain creds)
 connect-distributed.properties
+# direnv environment variables
+.envrc
