@@ -6,7 +6,7 @@
     "topics": "game_events",
     "snowflake.database.name": "sfkafka_testing",
     "snowflake.schema.name": "raw",
-    "snowflake.topic2table.map": "game_events:game_events_local",
+    "snowflake.topic2table.map": "game_events:game_events",
     "snowflake.ingestion.method": "SNOWPIPE_STREAMING",
     "snowflake.enable.schematization": "true",
     "snowflake.url.name": "${SNOWFLAKE_HOST}:443",
