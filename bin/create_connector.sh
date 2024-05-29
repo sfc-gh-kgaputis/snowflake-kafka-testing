@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Check if jq is available
+if ! command -v jq &> /dev/null
+then
+    echo "jq could not be found. Please install jq to continue."
+    exit 1
+fi
+
 # Check if a valid argument was passed
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <path_to_json_file>"

@@ -1,7 +1,7 @@
 FROM alpine:latest AS kafka_dist
 
-ARG SCALA_VERSION
-ARG KAFKA_VERSION
+ARG SCALA_VERSION=2.13
+ARG KAFKA_VERSION=3.6.2
 ARG KAFKA_DISTRO_BASE_URL=https://dlcdn.apache.org/kafka
 
 ENV kafka_distro=kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz
@@ -24,11 +24,19 @@ RUN rm -r kafka_$SCALA_VERSION-$KAFKA_VERSION/bin/windows
 RUN wget https://repo1.maven.org/maven2/com/snowflake/snowflake-kafka-connector/2.2.2/snowflake-kafka-connector-2.2.2.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.2.4/bc-fips-1.0.2.4.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
+RUN wget https://github.com/sfc-gh-kgaputis/snowflake-kafka-smt-examples/raw/main/dist/snowflake-kafka-smt-examples-1.0-SNAPSHOT.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 
 FROM openjdk:11-jre-slim
 
-ARG SCALA_VERSION
-ARG KAFKA_VERSION
+# Install any necessary utilities in one layer to keep the image clean and optimized
+RUN apt-get update && \
+    apt-get install -y \
+    jq \
+    # any other packages you might need
+    && rm -rf /var/lib/apt/lists/*
+
+ARG SCALA_VERSION=2.13
+ARG KAFKA_VERSION=3.6.2
 
 ENV KAFKA_VERSION=$KAFKA_VERSION \
     SCALA_VERSION=$SCALA_VERSION \
@@ -42,13 +50,19 @@ COPY --from=kafka_dist /var/tmp/kafka_$SCALA_VERSION-$KAFKA_VERSION ${KAFKA_HOME
 
 RUN echo $pwd
 
-COPY connect-distributed.properties ${KAFKA_HOME}/config/
 COPY connect-log4j.properties ${KAFKA_HOME}/config/
-
-#COPY connect_lib/*  ${KAFKA_HOME}/libs/
 
 RUN chmod a+x ${KAFKA_HOME}/bin/*.sh
 
 RUN mkdir -p /opt/plugins
+RUN mkdir -p /opt/extra-libs
+ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
 
+RUN mkdir -p /docker
+COPY docker/entrypoint.sh /docker/entrypoint.sh
+COPY docker/entrypoint_test.sh /docker/entrypoint_test.sh
+RUN chmod +x /docker/entrypoint.sh
+RUN chmod +x /docker/entrypoint_test.sh
+
+ENTRYPOINT ["/docker/entrypoint.sh"]
 CMD ["/opt/kafka/bin/connect-distributed.sh", "/opt/kafka/config/connect-distributed.properties"]

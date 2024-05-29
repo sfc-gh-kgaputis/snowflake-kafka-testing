@@ -6,7 +6,7 @@
     "topics": "events",
     "snowflake.database.name": "sfkafka_testing",
     "snowflake.schema.name": "raw",
-    "snowflake.topic2table.map": "events:events_streaming",
+    "snowflake.topic2table.map": "events:events",
     "snowflake.ingestion.method": "SNOWPIPE_STREAMING",
     "snowflake.enable.schematization": "true",
     "snowflake.url.name": "${SNOWFLAKE_HOST}:443",
@@ -17,10 +17,14 @@
     "buffer.count.records": "50000",
     "buffer.flush.time": "1",
     "buffer.size.bytes": "16777216",
-    "snowflake.streaming.max.client.lag": "5",
+    "snowflake.streaming.max.client.lag": "1",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
-    "consumer.partition.assignment.strategy": "org.apache.kafka.clients.consumer.CooperativeStickyAssignor"
+    "consumer.override.partition.assignment.strategy": "org.apache.kafka.clients.consumer.CooperativeStickyAssignor",
+    "snowflake.streaming.client.provider.override.map": "ENABLE_SNOWPIPE_STREAMING_JMX_METRICS:true",
+    "transforms": "addTimestampHeader,logIngestMetrics",
+    "transforms.addTimestampHeader.type": "com.snowflake.examples.kafka.smt.AddSinkTimestampHeader",
+    "transforms.logIngestMetrics.type": "com.snowflake.examples.kafka.smt.LogIngestMetrics"
   }
 }

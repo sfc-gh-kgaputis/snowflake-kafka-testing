@@ -3,6 +3,27 @@ networks:
   sfkafka_net:
     driver: bridge
 services:
+  sf-kafka-connect:
+    build:
+      context: .
+      args:
+        SCALA_VERSION: ${SCALA_VERSION}
+        KAFKA_VERSION: ${KAFKA_VERSION}
+    networks:
+      - sfkafka_net
+    ports:
+      - "8083:8083"
+      - "1099:1099"
+    volumes:
+      - ./connect_lib:/opt/extra-libs
+      - ./connect_plugins:/opt/plugins
+      - ./connect-distributed.properties:/docker/connect-distributed-mounted.properties
+    environment:
+      CONNECT_REST_ADVERTISED_HOST_NAME: ${HOSTNAME:-connect}
+      CONNECT_REST_ADVERTISED_PORT: 8083
+      CONNECT_LISTENERS: 'http://0.0.0.0:8083'
+      CONNECT_REST_PORT: 8083
+    env_file: connect.env
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -15,6 +36,7 @@ services:
     volumes:
       - zookeeper_data:/var/lib/zookeeper/data
       - zookeeper_datalog:/var/lib/zookeeper/log
+    profiles: [ kafka ]
   kafka:
     image: confluentinc/cp-kafka:latest
     depends_on:
@@ -36,6 +58,7 @@ services:
       KAFKA_LOG_RETENTION_HOURS: 168  # Set default retention to 7 days
     volumes:
       - kafka_data:/var/lib/kafka/data
+    profiles: [ kafka ]
   schema-registry:
     image: confluentinc/cp-schema-registry:latest
     depends_on:
@@ -50,27 +73,7 @@ services:
       SCHEMA_REGISTRY_SCHEMA_REGISTRY_BASIC_AUTH_USER_INFO: test_user:Pa$$word # replace with your username and password
     ports:
       - "8081:8081"
-  sf-kafka-connect:
-    build:
-      context: .
-      args:
-        SCALA_VERSION: ${SCALA_VERSION}
-        KAFKA_VERSION: ${KAFKA_VERSION}
-    networks:
-      - sfkafka_net
-    ports:
-      - "8083:8083"
-    #    volumes:
-    #      - ./connect_lib:/usr/share/java
-    #      - ./connect_plugins:/opt/plugins
-    environment: #rely on connect-distributed.properties for broker info and creds
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect
-      CONNECT_REST_PORT: 8083
-      KAFKA_HEAP_OPTS: "-Xms1g -Xmx4g"
-    env_file: connect.env
-    depends_on:
-      - kafka
-      - zookeeper
+    profiles: [ kafka ]
   kafdrop:
     image: obsidiandynamics/kafdrop:latest
     networks:
@@ -84,6 +87,7 @@ services:
     depends_on:
       - kafka
       - zookeeper
+    profiles: [ kafdrop ]
 volumes:
   kafka_data:
   zookeeper_data:
