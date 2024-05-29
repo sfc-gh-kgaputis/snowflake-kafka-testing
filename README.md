@@ -1,6 +1,7 @@
 # Snowflake Kafka Testing
 
-This repo is designed to help with local development and testing of the Kafka Connector for Snowflake. 
+This repo is designed to help with local development and testing of the Kafka Connector for Snowflake. The project assumes that Kafka Connect will always run in "distributed mode", and includes several bash scripts to help deploy and undeploy connectors using the Kafka Connect REST API.
+
 Using Docker Compose profiles, you can optionally enable a local Kafka Broker as well as the Kafdrop UI for 
 observability into Kafka topics. 
 
@@ -17,11 +18,11 @@ observability into Kafka topics.
 
 ## Environment setup
 
-Populate the required environment and config files:
+Populate the **required** environment and config files:
 
-- `.env`
-- `connect.env`
-- `connect-distributed.properties`
+- `.env`: Used for setting Docker Compose build arg (e.g. the Kafka version to use). 
+- `connect.env`: Use for setting environment variables in the Kafka Connect container. 
+- `connect-distributed.properties`: Various config for Kafka Connect, including SASL authentication when connecting to secure Kafka clusters (e.g. Confluent Cloud).
 
 These are not included in version control, because they will change for each user/environment.
 
@@ -31,7 +32,7 @@ In both cases, you will see an example file that ends with the suffix `.example`
 ### Set activate profile(s) for Docker Compose
 This project uses the `COMPOSE_PROFILES` environment variable to optionally enable a local Kafka Broker and the Kafdrop UI. 
 
-If you just want Kafka Connect (with the Snowflake Connector for Kafka), you can disregard this step.
+If you just want Kafka Connect (with the Snowflake Connector for Kafka), connecting to existing Kafka infrastructure, you can disregard this step.
 
 To enable a local Kafka broker:
 ```
