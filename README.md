@@ -1,6 +1,8 @@
 # Snowflake Kafka Testing
 
-This repo is designed to help with local development and testing of the Kafka Connector for Snowflake.
+This repo is designed to help with local development and testing of the Kafka Connector for Snowflake. 
+Using Docker Compose profiles, you can optionally enable a local Kafka Broker as well as the Kafdrop UI for 
+observability into Kafka topics. 
 
 **PLEASE NOTE:** This example project is not an official Snowflake offering. It comes with no support or warranty.
 
@@ -26,6 +28,19 @@ These are not included in version control, because they will change for each use
 In both cases, you will see an example file that ends with the suffix `.example`.
 
 ## Docker container management
+### Set activate profile(s) for Docker Compose
+This project uses the `COMPOSE_PROFILES` environment variable to optionally enable a local Kafka Broker and the Kafdrop UI. 
+
+If you just want Kafka Connect (with the Snowflake Connector for Kafka), you can disregard this step.
+
+To enable a local Kafka broker:
+```
+export COMPOSE_PROFILES=kafka
+```
+To enable a local Kafka broker and the Kafdrop UI:
+```
+export COMPOSE_PROFILES=kafka,kafdrop
+```
 
 ### Build Kafka Connect container with Snowflake connector
 
@@ -33,20 +48,17 @@ In both cases, you will see an example file that ends with the suffix `.example`
 docker-compose build
 ```
 
-### Start local Kafka environment
-
+### Start local Kafka Connect environment
 ```
 docker-compose up -d
 ```
 
 ### Stop local Kafka environment
-
 ```
 docker-compose stop
 ```
 
 ### Destroy local Kafka environment
-
 ```
 docker-compose down --volumes
 ```
