@@ -21,10 +21,13 @@ RUN gpg --verify $kafka_distro_asc $kafka_distro
 RUN tar -xzf $kafka_distro 
 RUN rm -r kafka_$SCALA_VERSION-$KAFKA_VERSION/bin/windows
 
+# TODO add build args for SF connector version
+# TODO install these jars as a plugin instead of directly into libs folder
 RUN wget https://repo1.maven.org/maven2/com/snowflake/snowflake-kafka-connector/2.2.2/snowflake-kafka-connector-2.2.2.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.2.4/bc-fips-1.0.2.4.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
-RUN wget https://github.com/sfc-gh-kgaputis/snowflake-kafka-smt-examples/raw/main/dist/snowflake-kafka-smt-examples-1.0-SNAPSHOT.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
+# If you want to test out example SMTs, it may be better to download externally and put in the ./connect_lib folder
+# RUN wget https://github.com/sfc-gh-kgaputis/snowflake-kafka-smt-examples/raw/main/dist/snowflake-kafka-smt-examples-1.0-SNAPSHOT.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
 
 FROM openjdk:11-jre-slim
 

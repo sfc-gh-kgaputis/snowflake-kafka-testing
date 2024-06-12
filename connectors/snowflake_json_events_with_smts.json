@@ -22,6 +22,9 @@
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
     "consumer.override.partition.assignment.strategy": "org.apache.kafka.clients.consumer.CooperativeStickyAssignor",
-    "snowflake.streaming.client.provider.override.map": "ENABLE_SNOWPIPE_STREAMING_JMX_METRICS:true"
+    "snowflake.streaming.client.provider.override.map": "ENABLE_SNOWPIPE_STREAMING_JMX_METRICS:true",
+    "transforms": "addTimestampHeader,logIngestMetrics",
+    "transforms.addTimestampHeader.type": "com.snowflake.examples.kafka.smt.AddSinkTimestampHeader",
+    "transforms.logIngestMetrics.type": "com.snowflake.examples.kafka.smt.LogIngestMetrics"
   }
 }

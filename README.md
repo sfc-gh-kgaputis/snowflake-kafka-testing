@@ -26,7 +26,7 @@ Populate the **required** environment and config files:
 
 These are not included in version control, because they will change for each user/environment.
 
-In both cases, you will see an example file that ends with the suffix `.example`.
+In each case, you will see an example file that ends with the suffix `.example`.
 
 ## Docker container management
 ### Set activate profile(s) for Docker Compose
@@ -65,8 +65,13 @@ docker-compose down --volumes
 ```
 
 ## Deploying a connector (distributed mode)
+The following commands are based on shell scripts that wrap the API calls to the Kafka Connect REST API.   
 
-### Populate required environment variables
+### Helper bash scripts for making API calls to Kafka Connect Rest API
+
+### Create a connector
+
+#### Populate required environment variables
 
 ```
 export SNOWFLAKE_HOST="myorganization-myaccount.snowflakecomputing.com"
@@ -76,9 +81,7 @@ export SNOWFLAKE_PASSPHRASE="REDACTED"
 export SNOWFLAKE_ROLE="ingest"
 ```
 
-### Helper bash scripts for making API calls to Kafka Connect Rest API
-
-### Create a connector
+#### Create connector using bash script
 
 This bash script using `envsubst` to substitute environment variables (set above) in the JSON template for the
 connector.
@@ -97,12 +100,13 @@ bin/list_all_connectors.sh
 ```
 
 ### Check connector status
-
+NOTE: The connector name is defined in the JSON definition.
 ```
 bin/check_connector.sh snowflake_json_events
 ```
 
 ### Delete a connector
+NOTE: The connector name is defined in the JSON definition.
 
 ```
 bin/delete_connector.sh snowflake_json_events
