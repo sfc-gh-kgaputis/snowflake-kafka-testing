@@ -28,8 +28,8 @@ out/
 .DS_Store
 
 # Externally mounted JARs
-#connect_plugins/
-#connect_libs/
+connect_plugins/*.jar
+connect_lib/*.jar
 
 # make sure connectors don't have hard-coded credentials
 #connectors/
@@ -48,3 +48,4 @@ connect.env
 connect-distributed.properties
 # direnv environment variables
 .envrc
+
