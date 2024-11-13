@@ -1,8 +1,9 @@
 FROM alpine:latest AS kafka_dist
 
 ARG SCALA_VERSION=2.13
-ARG KAFKA_VERSION=3.6.2
+ARG KAFKA_VERSION=3.9.0
 ARG KAFKA_DISTRO_BASE_URL=https://dlcdn.apache.org/kafka
+ARG SNOWFLAKE_CONNECTOR_VERSION=2.5.0
 
 ENV kafka_distro=kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz
 ENV kafka_distro_asc=$kafka_distro.asc
@@ -21,13 +22,11 @@ RUN gpg --verify $kafka_distro_asc $kafka_distro
 RUN tar -xzf $kafka_distro 
 RUN rm -r kafka_$SCALA_VERSION-$KAFKA_VERSION/bin/windows
 
-# TODO add build args for SF connector version
-# TODO install these jars as a plugin instead of directly into libs folder
-RUN wget https://repo1.maven.org/maven2/com/snowflake/snowflake-kafka-connector/2.2.2/snowflake-kafka-connector-2.2.2.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
-RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.2.4/bc-fips-1.0.2.4.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
-RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
-# If you want to test out example SMTs, it may be better to download externally and put in the ./connect_lib folder
-# RUN wget https://github.com/sfc-gh-kgaputis/snowflake-kafka-smt-examples/raw/main/dist/snowflake-kafka-smt-examples-1.0-SNAPSHOT.jar -P kafka_$SCALA_VERSION-$KAFKA_VERSION/libs/
+# Install Snowflake connector in /opt/plugins
+RUN mkdir -p /opt/plugins/snowflake-kafka-connector
+RUN wget https://repo1.maven.org/maven2/com/snowflake/snowflake-kafka-connector/$SNOWFLAKE_CONNECTOR_VERSION/snowflake-kafka-connector-$SNOWFLAKE_CONNECTOR_VERSION.jar -P /opt/plugins/snowflake-kafka-connector/
+RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.2.4/bc-fips-1.0.2.4.jar -P /opt/plugins/snowflake-kafka-connector/
+RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P /opt/plugins/snowflake-kafka-connector/
 
 FROM openjdk:11-jre-slim
 
@@ -39,7 +38,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 ARG SCALA_VERSION=2.13
-ARG KAFKA_VERSION=3.6.2
+ARG KAFKA_VERSION=3.9.0
 
 ENV KAFKA_VERSION=$KAFKA_VERSION \
     SCALA_VERSION=$SCALA_VERSION \
@@ -51,14 +50,18 @@ RUN mkdir ${KAFKA_HOME} && apt-get update && apt-get install curl -y && apt-get 
 
 COPY --from=kafka_dist /var/tmp/kafka_$SCALA_VERSION-$KAFKA_VERSION ${KAFKA_HOME}
 
+RUN mkdir -p /opt/plugins/snowflake-kafka-connector
+COPY --from=kafka_dist /opt/plugins/snowflake-kafka-connector /opt/plugins/snowflake-kafka-connector
+
 RUN echo $pwd
 
 COPY connect-log4j.properties ${KAFKA_HOME}/config/
 
 RUN chmod a+x ${KAFKA_HOME}/bin/*.sh
 
-RUN mkdir -p /opt/plugins
+# Create additional folders for libs and plugins mounted from host file system
 RUN mkdir -p /opt/extra-libs
+RUN mkdir -p /opt/extra-plugins
 ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
 
 RUN mkdir -p /docker

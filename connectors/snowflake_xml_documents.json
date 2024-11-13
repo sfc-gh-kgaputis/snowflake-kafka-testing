@@ -19,10 +19,11 @@
     "buffer.size.bytes": "16777216",
     "snowflake.streaming.max.client.lag": "1",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-    "value.converter": "com.snowflake.examples.kafka.converter.StringValueConverter",
+    "value.converter": "com.snowflake.examples.kafka.converter.ByteArrayValueConverter",
     "consumer.override.partition.assignment.strategy": "org.apache.kafka.clients.consumer.CooperativeStickyAssignor",
     "snowflake.streaming.client.provider.override.map": "ENABLE_SNOWPIPE_STREAMING_JMX_METRICS:true",
-    "transforms": "parseAndFlattenXml",
-    "transforms.parseAndFlattenXml.type": "com.snowflake.examples.kafka.smt.ParseAndFlattenXml"
+    "transforms": "ParseXmlAsStrings",
+    "transforms.ParseXmlAsStrings.type": "com.snowflake.examples.kafka.smt.ParseXmlAsStrings",
+    "transforms.ParseXmlAsStrings.encoding": "Cp037"
   }
 }

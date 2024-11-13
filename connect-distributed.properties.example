@@ -73,7 +73,7 @@ offset.flush.interval.ms=10000
 # Examples:
 # plugin.path=/usr/local/share/java,/usr/local/share/kafka/plugins,/opt/connectors,
 #plugin.path=
-plugin.path=/opt/plugins
+plugin.path=/opt/plugins,/opt/extra-plugins
 
 # Force cooperative sticky assignment, instead of "mixed mode"
 # For Snowflake connector, this is recommended when possible
