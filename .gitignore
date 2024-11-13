@@ -27,9 +27,14 @@ out/
 ### Mac OS ###
 .DS_Store
 
-# Externally mounted JARs
-connect_plugins/*.jar
-connect_lib/*.jar
+# Externally mounted JARs and other assets
+# Only preserve directory structure
+extra-plugins/**/*
+!extra-plugins/.gitkeep
+extra-libs/**/*
+!extra-libs/.gitkeep
+extra-config/**/*
+!extra-config/.gitkeep
 
 # make sure connectors don't have hard-coded credentials
 #connectors/

@@ -14,10 +14,12 @@ services:
       - sfkafka_net
     ports:
       - "8083:8083"
+      - "8080:8080"
       - "1099:1099"
     volumes:
-      - ./connect_lib:/opt/extra-libs
-      - ./connect_plugins:/opt/extra-plugins
+      - ./extra-config:/opt/extra-config
+      - ./extra-libs:/opt/extra-libs
+      - ./extra-plugins:/opt/extra-plugins
       - ./connect-distributed.properties:/docker/connect-distributed-mounted.properties
     environment:
       CONNECT_REST_ADVERTISED_HOST_NAME: ${HOSTNAME:-connect}
