@@ -1,0 +1,130 @@
+{
+  "agent": {
+    "region": "us-east-1",
+    "metrics_collection_interval": 60,
+    "debug": true
+  },
+  "logs": {
+    "metrics_collected": {
+      "prometheus": {
+        "cluster_name": "default",
+        "log_group_name": "/kafka-connect/kgaputis-local",
+        "prometheus_config_path": "/etc/prometheus-config.yml",
+        "emf_processor": {
+          "metric_declaration_dedup": true,
+          "metric_namespace": "KafkaConnect/kgaputis-local",
+          "metric_unit":{
+            "kafka_connect_worker_connector_total_task_count":  "Count",
+            "kafka_connect_worker_connector_running_task_count":  "Count",
+            "kafka_connect_worker_connector_failed_task_count":  "Count",
+            "kafka_connect_worker_connector_paused_task_count": "Count",
+            "kafka_connect_connector_status": "None",
+            "kafka_connect_connector_task_pause_ratio": "None",
+            "kafka_connect_connector_task_running_ratio": "None",
+            "kafka_connect_sink_task_partition_count": "None",
+            "kafka_connect_sink_task_sink_record_read": "Count",
+            "kafka_connect_sink_task_sink_record_send": "Count",
+            "kafka_connect_task_error_deadletterqueue_produce_requests": "Count",
+            "kafka_connect_task_error_deadletterqueue_produce_failures": "Count",
+            "kafka_connect_task_error_last_error_timestamp": "None",
+            "kafka_connect_task_error_total_errors_logged": "Count",
+            "kafka_connect_task_error_total_record_errors": "Count",
+            "kafka_connect_task_error_total_record_failures": "Count",
+            "kafka_connect_task_error_total_records_skipped": "Count",
+            "snowflake_kafka_connector_latest_consumer_offset": "None",
+            "snowflake_kafka_connector_processed_offset": "None",
+            "snowflake_kafka_connector_persisted_in_snowflake_offset": "None",
+            "snowflake_ingest_sdk_flush_latency": "Seconds",
+            "snowflake_ingest_sdk_input_throughput": "Count",
+            "snowflake_ingest_sdk_upload_throughput": "Count",
+            "snowflake_ingest_sdk_blob_size": "Bytes",
+            "snowflake_ingest_sdk_blob_row_count": "Count"
+          },
+          "metric_declaration": [
+            {
+              "source_labels": ["job"],
+              "label_matcher": "connect-jmx",
+              "dimensions": [["instance","connector"]],
+              "metric_selectors": [
+                "^kafka_connect_worker_connector_total_task_count$",
+                "^kafka_connect_worker_connector_running_task_count$",
+                "^kafka_connect_worker_connector_failed_task_count$",
+                "^kafka_connect_worker_connector_paused_task_count$"
+              ]
+            },
+            {
+              "source_labels": ["job"],
+              "label_matcher": "connect-jmx",
+              "dimensions": [["instance","connector","status","task"]],
+              "metric_selectors": [
+                "^kafka_connect_connector_status$"
+              ]
+            },
+            {
+              "source_labels": ["job"],
+              "label_matcher": "connect-jmx",
+              "dimensions": [["instance","connector","task"]],
+              "metric_selectors": [
+                "^kafka_connect_connector_task_pause_ratio$",
+                "^kafka_connect_connector_task_running_ratio$",
+                "^kafka_connect_sink_task_partition_count$",
+                "^kafka_connect_sink_task_sink_record_read$",
+                "^kafka_connect_sink_task_sink_record_send$",
+                "^kafka_connect_task_error_deadletterqueue_produce_requests$",
+                "^kafka_connect_task_error_deadletterqueue_produce_failures$",
+                "^kafka_connect_task_error_last_error_timestamp$",
+                "^kafka_connect_task_error_total_errors_logged$"
+              ]
+            },
+            {
+              "source_labels": ["job"],
+              "label_matcher": "connect-jmx",
+              "dimensions": [["instance","connector","task"]],
+              "metric_selectors": [
+                "^kafka_connect_connector_task_pause_ratio$",
+                "^kafka_connect_connector_task_running_ratio$"
+              ]
+            },
+            {
+              "source_labels": ["job"],
+              "label_matcher": "connect-jmx",
+              "dimensions": [["instance","connector","topic","partition"]],
+              "metric_selectors": [
+                "^snowflake_kafka_connector_latest_consumer_offset$",
+                "^snowflake_kafka_connector_processed_offset$",
+                "^snowflake_kafka_connector_persisted_in_snowflake_offset$"
+              ]
+            },
+            {
+              "source_labels": ["job","metric"],
+              "label_matcher": "connect-jmx;(Mean|50thPercentile|95thPercentile|99thPercentile|OneMinuteRate|FifteenMinuteRate)",
+              "dimensions": [["instance","clientName","metric"]],
+              "metric_selectors": [
+                "^snowflake_ingest_sdk_flush_latency$"
+              ]
+            },
+            {
+              "source_labels": ["job","metric"],
+              "label_matcher": "connect-jmx;(MeanRate|OneMinuteRate|FifteenMinuteRate)",
+              "dimensions": [["instance","clientName","metric"]],
+              "metric_selectors": [
+                "^snowflake_ingest_sdk_input_throughput$",
+                "^snowflake_ingest_sdk_upload_throughput$"
+              ]
+            },
+            {
+              "source_labels": ["job","metric"],
+              "label_matcher": "connect-jmx;(Mean|50thPercentile|95thPercentile|99thPercentile|Count)",
+              "dimensions": [["instance","clientName","metric"]],
+              "metric_selectors": [
+                "^snowflake_ingest_sdk_blob_size$",
+                "^snowflake_ingest_sdk_blob_row_count$"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "force_flush_interval": 5
+  }
+}

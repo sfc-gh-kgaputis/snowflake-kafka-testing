@@ -23,6 +23,6 @@
     "value.converter.schemas.enable": "false",
     "consumer.override.partition.assignment.strategy": "org.apache.kafka.clients.consumer.CooperativeStickyAssignor",
     "snowflake.streaming.client.provider.override.map": "ENABLE_SNOWPIPE_STREAMING_JMX_METRICS:true",
-    "enable.streaming.client.optimization": "false"
+    "enable.streaming.client.optimization": "true"
   }
 }

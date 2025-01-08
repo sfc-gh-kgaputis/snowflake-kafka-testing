@@ -47,10 +47,11 @@ target/
 
 # Docker-compose .env file
 .env
-# Container-specific env files
-connect.env
-# Kafka Connect properties (will contain creds)
+# Container-specific env files (will likely contain creds)
+*.env
+# Kafka Connect properties (will likely contain creds)
 connect-distributed.properties
 # direnv environment variables
 .envrc
 
+prometheus-aws-credentials

@@ -1,0 +1,58 @@
+global:
+  scrape_interval: 60s
+  scrape_timeout: 10s
+scrape_configs:
+  - job_name: connect-jmx #this is both name of the log stream and value of job attribute in log event
+    sample_limit: 10000
+    static_configs:
+      - targets:
+          - connect:8080
+    metrics_path: '/metrics'
+    metric_relabel_configs:
+      # Keep only Snowpipe Streaming, Kafka and Kafka Connect metrics
+      - source_labels: [__name__]
+        regex: '^(snowflake_ingest_sdk|snowflake_kafka_connector|kafka).*$'
+        action: keep
+#      # Add keep__ prefix to metrics we want to emit
+#      # Snowflake Kafka Connector
+#      # Offset metadata for each connector, topic and partition
+#      - source_labels: [ __name__ ]
+#        regex: '^(snowflake_kafka_connector_(latest_consumer|processed|persisted_in_snowflake)_offset)$'
+#        target_label: __name__
+#        replacement: 'keep__${1}'
+#        action: replace
+#      # Snowpipe Streaming
+#      # Input and upload (output) throughput
+#      - source_labels: [ __name__, metric ]
+#        regex: '^(snowflake_ingest_sdk_(input|upload)_throughput;(MeanRate|OneMinuteRate|FifteenMinuteRate))$'
+#        target_label: __name__
+#        replacement: 'keep__${1}'
+#        action: replace
+#      # Flush latency stats (total flush time, which equals build + upload + register)
+#      - source_labels: [ __name__, metric ]
+#        regex: '^(snowflake_ingest_sdk_flush_latency;(Mean|50thPercentile|95thPercentile|99thPercentile|OneMinuteRate|FifteenMinuteRate))$'
+#        target_label: __name__
+#        replacement: 'keep__${1}'
+#        action: replace
+#      # Blob size stats
+#      - source_labels: [ __name__, metric ]
+#        regex: '^(snowflake_ingest_sdk_blob_size;(Mean|50thPercentile|95thPercentile|99thPercentile|Count))$'
+#        target_label: __name__
+#        replacement: 'keep__${1}'
+#        action: replace
+#      # Blob row count stats
+#      - source_labels: [ __name__, metric ]
+#        regex: '^(snowflake_ingest_sdk_blob_row_count;(Mean|50thPercentile|95thPercentile|99thPercentile|Count))$'
+#        target_label: __name__
+#        replacement: 'keep__${1}'
+#        action: replace
+#      # Keep only metrics with keep__ prefix
+#      - source_labels: [__name__]
+#        regex: '^keep__.*$'
+#        action: keep
+#      # Remove keep__ prefix
+#      - source_labels: [ __name__ ]
+#        regex: '^keep__(.*)$'
+#        target_label: __name__
+#        replacement: '${1}'
+#        action: replace

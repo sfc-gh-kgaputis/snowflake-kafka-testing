@@ -12,6 +12,7 @@ services:
         SNOWFLAKE_CONNECTOR_VERSION: ${SNOWFLAKE_CONNECTOR_VERSION}
     networks:
       - sfkafka_net
+    hostname: connect
     ports:
       - "8083:8083"
       - "8080:8080"
@@ -27,6 +28,15 @@ services:
       CONNECT_LISTENERS: 'http://0.0.0.0:8083'
       CONNECT_REST_PORT: 8083
     env_file: connect.env
+  cloudwatch-agent:
+    image: amazon/cloudwatch-agent:latest
+    networks:
+      - sfkafka_net
+    env_file: cloudwatch-agent.env
+    volumes:
+      - ./prometheus-aws-credentials:/root/.aws/credentials
+      - ./prometheus-cwagentconfig.json:/etc/cwagentconfig
+      - ./prometheus-config.yml:/etc/prometheus-config.yml
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
