@@ -28,7 +28,7 @@ RUN wget https://repo1.maven.org/maven2/com/snowflake/snowflake-kafka-connector/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.2.4/bc-fips-1.0.2.4.jar -P /opt/plugins/snowflake-kafka-connector/
 RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P /opt/plugins/snowflake-kafka-connector/
 
-FROM openjdk:11-jre-slim
+FROM azul/zulu-openjdk:17-latest
 
 # Install any necessary utilities in one layer to keep the image clean and optimized
 RUN apt-get update && \
