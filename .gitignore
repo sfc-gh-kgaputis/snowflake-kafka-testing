@@ -54,3 +54,5 @@ connect-distributed.properties
 # direnv environment variables
 .envrc
 
+connectors-local/**/*
+!connectors-local/.gitkeep
