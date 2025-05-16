@@ -58,7 +58,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_LOG_RETENTION_HOURS: 168  # Set default retention to 7 days
+      KAFKA_LOG_RETENTION_HOURS: 24  # Set default retention to 1 day
+      KAFKA_LOG_RETENTION_BYTES: 1000000000 # Set default retention to 1 GB per partition
     volumes:
       - kafka_data:/var/lib/kafka/data
     profiles: [ kafka ]
