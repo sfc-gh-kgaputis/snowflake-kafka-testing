@@ -20,7 +20,9 @@ services:
       - ./extra-config:/opt/extra-config
       - ./extra-libs:/opt/extra-libs
       - ./extra-plugins:/opt/extra-plugins
-      - ./connect-distributed.properties:/docker/connect-distributed-mounted.properties
+#      - ./connect-distributed.properties:/docker/connect-distributed-mounted.properties:ro
+      - ./connect-standalone.properties:/docker/connect-standalone-mounted.properties:ro
+      - ./connectors-local:/opt/connectors
     environment:
       CONNECT_REST_ADVERTISED_HOST_NAME: ${HOSTNAME:-connect}
       CONNECT_REST_ADVERTISED_PORT: 8083

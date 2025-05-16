@@ -2,51 +2,65 @@
 
 echo "** In entrypoint.sh"
 
-# Path to externally mounted properties, for Docker Compose use case
-mounted_properties_file="/docker/connect-distributed-mounted.properties"
-# Path to connect-distributed.properties used by Kafka Connect
-target_properties_file="/opt/kafka/config/connect-distributed.properties"
+# Determine mode - default to distributed if not specified
+CONNECT_MODE=${CONNECT_MODE:-distributed}
+echo "Running Kafka Connect in $CONNECT_MODE mode"
 
-if [[ -n "${CONNECT_DISTRIBUTED_PROPERTIES_BASE64}" ]]; then
+# Set paths based on mode
+if [ "$CONNECT_MODE" = "standalone" ]; then
+    mounted_properties_file="/docker/connect-standalone-mounted.properties"
+    target_properties_file="/opt/kafka/config/connect-standalone.properties"
+    properties_env_var="CONNECT_STANDALONE_PROPERTIES_BASE64"
+else
+    mounted_properties_file="/docker/connect-distributed-mounted.properties"
+    target_properties_file="/opt/kafka/config/connect-distributed.properties"
+    properties_env_var="CONNECT_DISTRIBUTED_PROPERTIES_BASE64"
+fi
+
+# Handle properties file based on mode
+if [[ -n "${!properties_env_var}" ]]; then
     # If provided, write properties from base64 encoded env var
-    echo "Decoding CONNECT_DISTRIBUTED_PROPERTIES_BASE64 into: $target_properties_file"
-    echo "${CONNECT_DISTRIBUTED_PROPERTIES_BASE64}" | base64 --decode > $target_properties_file
-    echo "Done writing connect-distributed.properties"
+    echo "Decoding $properties_env_var into: $target_properties_file"
+    echo "${!properties_env_var}" | base64 --decode > $target_properties_file
+    echo "Done writing properties file"
 elif [ -f "$mounted_properties_file" ]; then
     # Fall back to properties file mounted via docker volume in special path
     cp -f "$mounted_properties_file" "$target_properties_file"
     echo "Externally mounted properties copied from $mounted_properties_file to $target_properties_file"
 else
     # Otherwise use default properties from kafka
-    echo "Using default connect-distributed.properties"
+    echo "Using default $CONNECT_MODE properties"
 fi
 
-# Ensure connect-distributed.properties is a file
+# Ensure properties file exists
 if [ ! -f "$target_properties_file" ]; then
-    echo "Required file connect-distributed.properties is missing or not a file."
+    echo "Required file $target_properties_file is missing or not a file."
     exit 1
 fi
 
-# Check if running in Fargate mode
-if [[ -n "$FARGATE_MODE" ]]; then
-    echo "Fargate mode detected. Fetching IP address from ECS metadata..."
-    JSON=$(curl "${ECS_CONTAINER_METADATA_URI}/task")
-    TASK_IP=$(echo "$JSON" | jq -r '.Containers[0].Networks[0].IPv4Addresses[0]')
-    # Check if TASK_IP is not empty
-    if [[ -n "$TASK_IP" ]]; then
-        export CONNECT_REST_ADVERTISED_HOST_NAME=$TASK_IP
-    else
-        echo "Failed to retrieve IP address from metadata."
-        exit 1
+# For distributed mode, handle Fargate and REST API settings
+if [ "$CONNECT_MODE" = "distributed" ]; then
+    # Check if running in Fargate mode
+    if [[ -n "$FARGATE_MODE" ]]; then
+        echo "Fargate mode detected. Fetching IP address from ECS metadata..."
+        JSON=$(curl "${ECS_CONTAINER_METADATA_URI}/task")
+        TASK_IP=$(echo "$JSON" | jq -r '.Containers[0].Networks[0].IPv4Addresses[0]')
+        # Check if TASK_IP is not empty
+        if [[ -n "$TASK_IP" ]]; then
+            export CONNECT_REST_ADVERTISED_HOST_NAME=$TASK_IP
+        else
+            echo "Failed to retrieve IP address from metadata."
+            exit 1
+        fi
     fi
-fi
 
-# Check if the environment variable is not set
-if [ -z "$CONNECT_REST_ADVERTISED_HOST_NAME" ]; then
-    echo "Using runtime hostname for CONNECT_REST_ADVERTISED_HOST_NAME"
-    export CONNECT_REST_ADVERTISED_HOST_NAME=$HOSTNAME
+    # Check if the environment variable is not set
+    if [ -z "$CONNECT_REST_ADVERTISED_HOST_NAME" ]; then
+        echo "Using runtime hostname for CONNECT_REST_ADVERTISED_HOST_NAME"
+        export CONNECT_REST_ADVERTISED_HOST_NAME=$HOSTNAME
+    fi
+    echo "CONNECT_REST_ADVERTISED_HOST_NAME set to: $CONNECT_REST_ADVERTISED_HOST_NAME"
 fi
-echo "CONNECT_REST_ADVERTISED_HOST_NAME set to: $CONNECT_REST_ADVERTISED_HOST_NAME"
 
 # Apply properties overrides given CONNECT_ prefixed env vars
 while IFS='=' read -r name value; do
@@ -82,6 +96,29 @@ if [ "$ENTRYPOINT_TEST" = "1" ]; then
   echo "** ENTRYPOINT_TEST mode"
   "$@"
 else
-  # Continue with the normal startup process
-  exec "$@"
+  # Continue with the startup process based on mode
+  if [ "$CONNECT_MODE" = "standalone" ]; then
+    # For standalone mode, we need connector configuration files
+    if [[ -z "$CONNECTOR_CONFIG_FILES" ]]; then
+      echo "ERROR: CONNECTOR_CONFIG_FILES must be set for standalone mode"
+      echo "Usage: CONNECTOR_CONFIG_FILES=\"/path/to/connector1.properties /path/to/connector2.properties\""
+      exit 1
+    fi
+
+    # Convert string to array and validate files exist
+    IFS=' ' read -ra CONNECTOR_CONFIGS <<< "$CONNECTOR_CONFIG_FILES"
+    for config_file in "${CONNECTOR_CONFIGS[@]}"; do
+      if [ ! -f "$config_file" ]; then
+        echo "ERROR: Connector config file not found: $config_file"
+        exit 1
+      fi
+      echo "Using connector config: $config_file"
+    done
+
+    # Execute connect-standalone with worker config followed by all connector configs
+    exec /opt/kafka/bin/connect-standalone.sh "$target_properties_file" "${CONNECTOR_CONFIGS[@]}"
+  else
+    # Distributed mode (default)
+    exec /opt/kafka/bin/connect-distributed.sh "$target_properties_file"
+  fi
 fi

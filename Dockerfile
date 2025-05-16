@@ -65,6 +65,9 @@ RUN mkdir -p /opt/extra-libs
 RUN mkdir -p /opt/extra-plugins
 ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
 
+# Create connectors folder for standalone mode
+RUN mkdir -p /opt/connectors
+
 RUN mkdir -p /docker
 COPY docker/entrypoint.sh /docker/entrypoint.sh
 COPY docker/entrypoint_test.sh /docker/entrypoint_test.sh
@@ -72,4 +75,4 @@ RUN chmod +x /docker/entrypoint.sh
 RUN chmod +x /docker/entrypoint_test.sh
 
 ENTRYPOINT ["/docker/entrypoint.sh"]
-CMD ["/opt/kafka/bin/connect-distributed.sh", "/opt/kafka/config/connect-distributed.properties"]
+#CMD ["/opt/kafka/bin/connect-distributed.sh", "/opt/kafka/config/connect-distributed.properties"]
