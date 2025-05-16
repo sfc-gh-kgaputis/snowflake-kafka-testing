@@ -22,12 +22,13 @@ services:
       - ./extra-plugins:/opt/extra-plugins
 #      - ./connect-distributed.properties:/docker/connect-distributed-mounted.properties:ro
       - ./connect-standalone.properties:/docker/connect-standalone-mounted.properties:ro
-      - ./connectors-local:/opt/connectors
+      - ./connectors/snowflake_json_events.properties:/opt/connectors/snowflake_json_events.properties
     environment:
       CONNECT_REST_ADVERTISED_HOST_NAME: ${HOSTNAME:-connect}
       CONNECT_REST_ADVERTISED_PORT: 8083
       CONNECT_LISTENERS: 'http://0.0.0.0:8083'
       CONNECT_REST_PORT: 8083
+      CONNECTOR_CONFIG_FILES: /opt/connectors/snowflake_json_events.properties
     env_file: connect.env
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
