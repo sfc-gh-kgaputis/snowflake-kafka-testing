@@ -50,6 +50,7 @@ target/
 # Container-specific env files
 connect.env
 # Kafka Connect properties (will contain creds)
+connect-standalone.properties
 connect-distributed.properties
 # direnv environment variables
 .envrc
