@@ -35,6 +35,8 @@ extra-libs/**/*
 !extra-libs/.gitkeep
 extra-config/**/*
 !extra-config/.gitkeep
+connectors-local/**/*
+!connectors-local/.gitkeep
 
 # make sure connectors don't have hard-coded credentials
 #connectors/
