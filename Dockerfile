@@ -1,9 +1,9 @@
 FROM alpine:latest AS kafka_dist
 
 ARG SCALA_VERSION=2.13
-ARG KAFKA_VERSION=3.9.0
+ARG KAFKA_VERSION=3.9.1
 ARG KAFKA_DISTRO_BASE_URL=https://dlcdn.apache.org/kafka
-ARG SNOWFLAKE_CONNECTOR_VERSION=2.5.0
+ARG SNOWFLAKE_CONNECTOR_VERSION=3.2.2
 
 ENV kafka_distro=kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz
 ENV kafka_distro_asc=$kafka_distro.asc
@@ -25,8 +25,13 @@ RUN rm -r kafka_$SCALA_VERSION-$KAFKA_VERSION/bin/windows
 # Install Snowflake connector in /opt/plugins
 RUN mkdir -p /opt/plugins/snowflake-kafka-connector
 RUN wget https://repo1.maven.org/maven2/com/snowflake/snowflake-kafka-connector/$SNOWFLAKE_CONNECTOR_VERSION/snowflake-kafka-connector-$SNOWFLAKE_CONNECTOR_VERSION.jar -P /opt/plugins/snowflake-kafka-connector/
-RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.2.4/bc-fips-1.0.2.4.jar -P /opt/plugins/snowflake-kafka-connector/
-RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P /opt/plugins/snowflake-kafka-connector/
+
+# As per docs, use for versions >= 3.1.1 of Snowflake Kafka Connector
+RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/2.1.0/bc-fips-2.1.0.jar -P /opt/plugins/snowflake-kafka-connector/
+RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/2.1.8/bcpkix-fips-2.1.8.jar -P /opt/plugins/snowflake-kafka-connector/
+# As per docs, use for versions prior to 3.1.1 of Snowflake Kafka Connector
+#RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.1/bc-fips-1.0.1.jar -P /opt/plugins/snowflake-kafka-connector/
+#RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P /opt/plugins/snowflake-kafka-connector/
 
 FROM azul/zulu-openjdk:17-latest
 
