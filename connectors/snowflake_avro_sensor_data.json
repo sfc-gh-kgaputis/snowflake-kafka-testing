@@ -1,12 +1,12 @@
 {
-  "name": "snowflake_json_events",
+  "name": "snowflake_avro_sensor_data",
   "config": {
     "connector.class": "com.snowflake.kafka.connector.SnowflakeSinkConnector",
     "tasks.max": "1",
-    "topics": "events",
+    "topics": "sensor_data",
     "snowflake.database.name": "sfkafka_testing",
     "snowflake.schema.name": "raw",
-    "snowflake.topic2table.map": "events:events",
+    "snowflake.topic2table.map": "sensor_data:sensor_data",
     "snowflake.ingestion.method": "SNOWPIPE_STREAMING",
     "snowflake.enable.schematization": "true",
     "snowflake.url.name": "${SNOWFLAKE_HOST}:443",
@@ -21,9 +21,13 @@
     "snowflake.streaming.max.client.lag": "5",
     "enable.streaming.client.optimization":"true",
     "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-    "value.converter.schemas.enable": "false",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "value.converter.basic.auth.credentials.source": "USER_INFO",
+    "value.converter.basic.auth.user.info": "test_user:Pa$$word",
     "consumer.override.partition.assignment.strategy": "org.apache.kafka.clients.consumer.CooperativeStickyAssignor",
-    "snowflake.streaming.client.provider.override.map": "BDEC_PARQUET_COMPRESSION_ALGORITHM:zstd,ENABLE_SNOWPIPE_STREAMING_JMX_METRICS:true"
+    "snowflake.streaming.client.provider.override.map": "BDEC_PARQUET_COMPRESSION_ALGORITHM:zstd,ENABLE_SNOWPIPE_STREAMING_JMX_METRICS:true",
+    "transforms": "addSchemaIdHeader",
+    "transforms.addSchemaIdHeader.type": "com.snowflake.examples.kafka.smt.AddSchemaIdHeader"
   }
 }
