@@ -68,7 +68,8 @@ RUN chmod a+x ${KAFKA_HOME}/bin/*.sh
 RUN mkdir -p /opt/extra-config
 RUN mkdir -p /opt/extra-libs
 RUN mkdir -p /opt/extra-plugins
-ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
+#ENV CLASSPATH=${CLASSPATH}:/opt/extra-libs/*
+ENV CLASSPATH=/opt/extra-libs/*
 
 RUN mkdir -p /docker
 COPY docker/entrypoint.sh /docker/entrypoint.sh
