@@ -65,7 +65,12 @@ done < <(env)
 # Enable insecure JMX remote monitoring (not for production)
 if [ "$JMX_REMOTE_INSECURE" = "1" ]; then
     echo "Enabling JMX with insecure configuration."
-    # Typically JMX advertised hostname should match Kafka Connect
+
+    # For local port-forwarding (kubectl port-forward), set JMX_RMI_HOSTNAME=localhost
+    # Otherwise defaults to the pod's advertised hostname
+    JMX_RMI_HOSTNAME="${JMX_RMI_HOSTNAME:-${CONNECT_REST_ADVERTISED_HOST_NAME}}"
+    echo "JMX RMI hostname set to: $JMX_RMI_HOSTNAME"
+
     JMX_OPTS="-Dcom.sun.management.jmxremote \
               -Dcom.sun.management.jmxremote.port=1099 \
               -Dcom.sun.management.jmxremote.rmi.port=1099 \
@@ -73,7 +78,7 @@ if [ "$JMX_REMOTE_INSECURE" = "1" ]; then
               -Dcom.sun.management.jmxremote.authenticate=false \
               -Dcom.sun.management.jmxremote.ssl=false \
               -Dcom.sun.management.jmxremote.host=0.0.0.0 \
-              -Djava.rmi.server.hostname=${CONNECT_REST_ADVERTISED_HOST_NAME}"
+              -Djava.rmi.server.hostname=${JMX_RMI_HOSTNAME}"
     # Append JMX_OPTS to KAFKA_OPTS
     export KAFKA_OPTS="${KAFKA_OPTS} ${JMX_OPTS}"
 fi
