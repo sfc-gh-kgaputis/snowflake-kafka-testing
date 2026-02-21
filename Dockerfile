@@ -33,7 +33,7 @@ RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/2.1.8/bcpki
 #RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bc-fips/1.0.1/bc-fips-1.0.1.jar -P /opt/plugins/snowflake-kafka-connector/
 #RUN wget https://repo1.maven.org/maven2/org/bouncycastle/bcpkix-fips/1.0.3/bcpkix-fips-1.0.3.jar -P /opt/plugins/snowflake-kafka-connector/
 
-FROM azul/zulu-openjdk:17-latest
+FROM azul/zulu-openjdk:21-latest
 
 # Install any necessary utilities in one layer to keep the image clean and optimized
 RUN apt-get update && \
