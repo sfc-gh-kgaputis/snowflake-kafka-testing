@@ -1,26 +1,25 @@
 #!/bin/bash
+set -euo pipefail
 
 # Check if jq is available
-if ! command -v jq &> /dev/null
-then
+if ! command -v jq &> /dev/null; then
     echo "jq could not be found. Please install jq to continue."
     exit 1
 fi
 
-# Variables
-host=localhost
-port=8083
+KAFKA_CONNECT_URL="${KAFKA_CONNECT_URL:-http://localhost:8083}"
 
 # Get list of connectors
-connectors=$(curl -s -X GET http://$host:$port/connectors)
+connectors=$(curl -s -X GET "$KAFKA_CONNECT_URL/connectors")
+connector_list=$(echo "$connectors" | jq -r '.[]')
 
-# Parse connectors from JSON response using jq tool
-connectors=$(echo $connectors | jq -r '.[]')
+if [ -z "$connector_list" ]; then
+    echo "No connectors found at $KAFKA_CONNECT_URL."
+    exit 0
+fi
 
-# For each connector, send GET request to see details
-for connector in $connectors
-do
+# For each connector, get its status
+for connector in $connector_list; do
     echo "Getting connector: $connector"
-    curl -X GET http://$host:$port/connectors/$connector/status | jq
+    curl -s -X GET "$KAFKA_CONNECT_URL/connectors/$connector/status" | jq
 done
-

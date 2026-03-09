@@ -1,7 +1,7 @@
 FROM alpine:latest AS kafka_dist
 
 ARG SCALA_VERSION=2.13
-ARG KAFKA_VERSION=3.9.1
+ARG KAFKA_VERSION=3.9.2
 ARG KAFKA_DISTRO_BASE_URL=https://dlcdn.apache.org/kafka
 ARG SNOWFLAKE_CONNECTOR_VERSION=3.2.2
 ARG BC_FIPS_VERSION=2.1.0
@@ -10,7 +10,7 @@ ARG BCPKIX_FIPS_VERSION=2.1.8
 ENV kafka_distro=kafka_$SCALA_VERSION-$KAFKA_VERSION.tgz
 ENV kafka_distro_asc=$kafka_distro.asc
 
-RUN apk add --no-cache gnupg gnupg-keyboxd
+RUN apk add --no-cache gnupg
 
 WORKDIR /var/tmp
 
@@ -42,7 +42,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 ARG SCALA_VERSION=2.13
-ARG KAFKA_VERSION=3.9.0
+ARG KAFKA_VERSION=3.9.2
 
 ENV KAFKA_VERSION=$KAFKA_VERSION \
     SCALA_VERSION=$SCALA_VERSION \

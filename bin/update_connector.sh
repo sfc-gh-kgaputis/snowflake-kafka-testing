@@ -1,52 +1,48 @@
 #!/bin/bash
-
-# Check if a valid argument was passed
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <path_to_json_file>"
-    exit 1
-fi
-
-json_file=$1
-
-# Check if the provided JSON file exists
-if [ ! -f "$json_file" ]; then
-    echo "Error: File '$json_file' not found."
-    exit 2
-fi
+set -euo pipefail
 
 # Check if jq is available
-if ! command -v jq &> /dev/null
-then
+if ! command -v jq &> /dev/null; then
     echo "jq could not be found. Please install jq to continue."
     exit 1
 fi
 
-# Extract the connector name from the JSON file
-connector_name=$(jq -r '.name' "$json_file")
+KAFKA_CONNECT_URL="${KAFKA_CONNECT_URL:-http://localhost:8083}"
 
-# Check if the connector name was successfully extracted
-if [ -z "$connector_name" ]; then
+# Check if a valid argument was passed
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <path_to_json_file>"
+    echo ""
+    echo "Set KAFKA_CONNECT_URL to override the default ($KAFKA_CONNECT_URL)."
+    exit 1
+fi
+
+JSON_FILE="$1"
+
+# Check if the provided file exists
+if [ ! -f "$JSON_FILE" ]; then
+    echo "Error: File '$JSON_FILE' not found."
+    exit 2
+fi
+
+# Extract the connector name from the JSON file
+connector_name=$(jq -r '.name' "$JSON_FILE")
+
+if [ -z "$connector_name" ] || [ "$connector_name" = "null" ]; then
     echo "Failed to extract connector name from JSON file."
     exit 3
 fi
 
 # Substitute environment variables in the JSON template and extract the config
-exported_json=$(jq '.config' "$json_file" | envsubst)
-
-# Check if envsubst succeeded
-if [ $? -ne 0 ]; then
-    echo "Failed to substitute environment variables in JSON file."
-    exit 4
-fi
+exported_json=$(jq '.config' "$JSON_FILE" | envsubst)
 
 # Update the connector with the substituted JSON
-update_response=$(echo "${exported_json}" | curl -X PUT -H "Content-Type: application/json" --data @- http://localhost:8083/connectors/${connector_name}/config)
+echo "Updating connector '$connector_name' via $KAFKA_CONNECT_URL ..."
+response=$(echo "${exported_json}" | curl -s -X PUT -H "Content-Type: application/json" --data @- "$KAFKA_CONNECT_URL/connectors/${connector_name}/config")
 
-# Check if the curl command was successful
 if [ $? -eq 0 ]; then
-    echo "Kafka Connect API call was successful (check output for errors)."
-    echo "${update_response}" | jq
+    echo "${response}" | jq
 else
     echo "Failed to make API call to Kafka Connect."
-    exit 5
+    exit 4
 fi

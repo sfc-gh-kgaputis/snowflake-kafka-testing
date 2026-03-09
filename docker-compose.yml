@@ -30,7 +30,7 @@ services:
       CONNECT_REST_PORT: 8083
     env_file: connect.env
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:${CP_VERSION}
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -43,7 +43,7 @@ services:
       - zookeeper_datalog:/var/lib/zookeeper/log
     profiles: [ kafka ]
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:${CP_VERSION}
     depends_on:
       - zookeeper
     networks:
@@ -65,7 +65,7 @@ services:
       - kafka_data:/var/lib/kafka/data
     profiles: [ kafka ]
   schema-registry:
-    image: confluentinc/cp-schema-registry:latest
+    image: confluentinc/cp-schema-registry:${CP_VERSION}
     depends_on:
       - kafka
     networks:
