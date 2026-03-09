@@ -132,10 +132,18 @@ bin/remove_all_connectors.sh
 
 All connectors use Snowpipe Streaming ingestion with schematization enabled, targeting the `sfkafka_testing.raw` schema.
 
+### v3.x connectors (SnowflakeSinkConnector)
+
 - `snowflake_json_events.json` — JSON events from the `events` topic (zstd compression, JMX metrics enabled)
 - `snowflake_json_events_reshaped.json` — Same `events` topic, but applies a custom `ReshapeVehicleEvent` SMT and writes to the `reshaped_events` table
 - `snowflake_avro_sensor_data.json` — Avro sensor data from the `sensor_data` topic via Schema Registry, with an `AddSchemaIdHeader` SMT
 - `snowflake_xml_documents.json` — XML documents from the `xml_documents` topic using a ByteArray converter and `ParseXmlAsStrings` SMT (supports EBCDIC/Cp037 encoding)
+
+### v4.x connectors (SnowflakeStreamingSinkConnector)
+
+- `snowflake_json_events_v4.json` — JSON events from the `events` topic, writes to `events_v4` table. Uses the High Performance connector class and requires `SNOWFLAKE_WAREHOUSE` env var.
+
+See [Testing with v4](#testing-with-the-v4-high-performance-connector) below for setup instructions.
 
 ## Extensibility
 
@@ -154,6 +162,45 @@ The Docker entrypoint (`docker/entrypoint.sh`) supports three property-loading s
 Any `CONNECT_*` environment variable is automatically translated into a Kafka Connect worker property override (e.g., `CONNECT_BOOTSTRAP_SERVERS` becomes `bootstrap.servers`).
 
 Set `JMX_REMOTE_INSECURE=1` to enable JMX remote access on port 1099 for local debugging. Set `FARGATE_MODE=1` for ECS task IP auto-discovery.
+
+## Testing with the v4 High Performance connector
+
+The v4.x connector (`SnowflakeStreamingSinkConnector`) is the [Snowflake High Performance connector for Kafka](https://docs.snowflake.com/en/connectors/kafkahp/about), currently in Public Preview. It uses the Snowpipe Streaming High Performance architecture and has a different configuration surface than v3.x.
+
+Key differences from v3.x:
+- **Connector class**: `com.snowflake.kafka.connector.SnowflakeStreamingSinkConnector` (instead of `SnowflakeSinkConnector`)
+- **Warehouse required**: `snowflake.warehouse.name` is a required property
+- **Removed properties**: `snowflake.ingestion.method`, `snowflake.enable.schematization`, `snowflake.streaming.enable.single.buffer`, `snowflake.streaming.max.client.lag`, `enable.streaming.client.optimization`, and `snowflake.streaming.client.provider.override.map` are not used
+- **No auto-migration**: Cannot migrate existing v3.x pipelines — must deploy fresh connectors
+- **Schema evolution**: Always enabled (no config toggle)
+
+### Steps to test v4
+
+1. Update `.env` to use the v4 connector version:
+   ```
+   SNOWFLAKE_CONNECTOR_VERSION=4.0.0-rc8
+   ```
+
+2. Rebuild the Docker image:
+   ```
+   docker compose build --no-cache
+   ```
+
+3. Add `SNOWFLAKE_WAREHOUSE` to your `connect.env`:
+   ```
+   SNOWFLAKE_WAREHOUSE=<your_warehouse>
+   ```
+
+4. Start Kafka Connect and deploy the v4 connector:
+   ```
+   docker compose up -d
+   bin/create_connector.sh connectors/snowflake_json_events_v4.json
+   ```
+
+5. Check status:
+   ```
+   bin/check_connector.sh snowflake_json_events_v4
+   ```
 
 ## Maintenance
 
