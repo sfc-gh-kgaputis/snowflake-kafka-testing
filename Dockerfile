@@ -7,7 +7,10 @@ FROM alpine:latest AS kafka_dist
 ARG SCALA_VERSION=2.13
 ARG KAFKA_VERSION=3.9.2
 ARG KAFKA_DISTRO_BASE_URL=https://dlcdn.apache.org/kafka
-ARG SNOWFLAKE_CONNECTOR_VERSION=3.2.2
+# For old, very specific versions of Kafka, you may need to use the archive URL instead (very slow)
+# ARG KAFKA_DISTRO_BASE_URL=https://archive.apache.org/dist/kafka
+
+ARG SNOWFLAKE_CONNECTOR_VERSION=3.5.3
 ARG BC_FIPS_VERSION=2.1.0
 ARG BCPKIX_FIPS_VERSION=2.1.8
 
