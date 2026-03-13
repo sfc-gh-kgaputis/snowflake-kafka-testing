@@ -49,6 +49,30 @@ export COMPOSE_PROFILES=kafka,kafdrop
 docker-compose build
 ```
 
+### Build with cloud-managed Kafka auth libraries
+
+The Dockerfile supports optional build args to bake in authentication libraries for cloud-managed Kafka services. These are disabled by default. Auth JARs are installed to `/opt/auth-libs/` inside the image (separate from the host-mounted `/opt/extra-libs/`) and added to the CLASSPATH automatically.
+
+**AWS MSK** (SASL/AWS_MSK_IAM with `IAMLoginModule`):
+```
+docker compose build --build-arg INCLUDE_AWS_IAM=true
+```
+Downloads the `aws-msk-iam-auth` uber-JAR (all dependencies bundled) from Maven Central. Default version: `2.3.5`. Override with `--build-arg AWS_IAM_VERSION=x.y.z`.
+
+**GCP Managed Kafka** (SASL/OAUTHBEARER with `GcpLoginCallbackHandler`):
+```
+docker compose build --build-arg INCLUDE_GCP_IAM=true
+```
+Downloads the `managed-kafka-auth-login-handler` release bundle (JAR + transitive dependencies) from the [googleapis/managedkafka](https://github.com/googleapis/managedkafka) GitHub releases. Default version: `1.0.6`. Override with `--build-arg GCP_IAM_VERSION=x.y.z`.
+
+You can enable both at the same time:
+```
+docker compose build --build-arg INCLUDE_GCP_IAM=true --build-arg INCLUDE_AWS_IAM=true
+```
+
+After building, you must also provide a `connect-distributed.properties` file that configures the appropriate SASL authentication for your broker. 
+
+
 ### Start local Kafka Connect environment
 ```
 docker-compose up -d

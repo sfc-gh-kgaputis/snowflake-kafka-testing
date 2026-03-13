@@ -32,7 +32,7 @@ The project is **not** a library or application with source code to compile. It 
 
 ## Important Files
 
-- `Dockerfile` — Multi-stage build: downloads Kafka, verifies GPG signatures, installs the Snowflake connector + BouncyCastle FIPS JARs, then builds a runtime image on Zulu JDK 21.
+- `Dockerfile` — Two-stage multi-stage build: (1) `kafka_dist` (Alpine) downloads Kafka from Apache mirrors with GPG verification, installs the Snowflake connector + BouncyCastle FIPS JARs, and optionally downloads cloud-managed Kafka auth libraries (GCP and/or AWS) into `/opt/auth-libs/`; (2) runtime image (Azul Zulu JDK 21) copies everything in and sets up the CLASSPATH and entrypoint.
 - `docker-compose.yml` — Defines `sf-kafka-connect` (always), plus `zookeeper`, `kafka`, `schema-registry` (profile: `kafka`), and `kafdrop` (profile: `kafdrop`).
 - `.env.example` — Build args: `SCALA_VERSION`, `KAFKA_VERSION`, `SNOWFLAKE_CONNECTOR_VERSION`.
 - `connect-distributed.properties.example` — Example Kafka Connect worker properties pointing to `kafka:9092` with `plugin.path=/opt/plugins,/opt/extra-plugins`.
@@ -56,6 +56,14 @@ Custom Single Message Transforms and converters are loaded from `extra-libs/` (C
 ### Environment Variable Overrides
 The entrypoint converts any `CONNECT_*` env var to a Kafka Connect property by stripping the `CONNECT_` prefix, replacing `_` with `.`, and lowercasing. For example, `CONNECT_BOOTSTRAP_SERVERS=broker:9092` becomes `bootstrap.servers=broker:9092`.
 
+### Cloud-Managed Kafka Authentication
+The Dockerfile supports optional build-time inclusion of auth libraries for cloud-managed Kafka services, controlled by build args:
+
+- **`INCLUDE_AWS_IAM=true`** — Downloads the AWS MSK IAM auth uber-JAR (`aws-msk-iam-auth-*-all.jar`) from Maven Central. Version controlled by `AWS_IAM_VERSION` (default `2.3.5`). Enables SASL/AWS_MSK_IAM with `software.amazon.msk.auth.iam.IAMLoginModule` and `software.amazon.msk.auth.iam.IAMClientCallbackHandler`.
+- **`INCLUDE_GCP_IAM=true`** — Downloads the GCP Managed Kafka auth bundle (`managed-kafka-auth-login-handler` + transitive deps) from the `googleapis/managedkafka` GitHub releases. Version controlled by `GCP_IAM_VERSION` (default `1.0.6`). Enables SASL/OAUTHBEARER with `com.google.cloud.hosted.kafka.auth.GcpLoginCallbackHandler`.
+
+Auth JARs are placed in `/opt/auth-libs/` inside the image, which is on the CLASSPATH but **separate** from `/opt/extra-libs/` (host-mounted by Docker Compose for local development). Both are disabled by default.
+
 ## Working with This Project
 
 ### Adding a new connector
@@ -72,6 +80,7 @@ The entrypoint converts any `CONNECT_*` env var to a Kafka Connect property by s
 - Kafka and connector versions are controlled by build args in `.env.example` / `.env`.
 - The Dockerfile downloads Kafka from Apache mirrors and the Snowflake connector from Maven Central.
 - BouncyCastle FIPS JARs are version-specific to the connector version (see comments in Dockerfile).
+- Cloud auth libraries (AWS, GCP) are optional build args — see [Cloud-Managed Kafka Authentication](#cloud-managed-kafka-authentication) above. They use simple `wget` downloads (no Maven build stage) and land in `/opt/auth-libs/`.
 
 ### Testing
 - Use `docker compose --profile kafka up` to run a local Kafka broker for end-to-end testing.
