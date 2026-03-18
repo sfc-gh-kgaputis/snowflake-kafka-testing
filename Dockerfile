@@ -60,13 +60,31 @@ RUN if [ "$INCLUDE_AWS_IAM" = "true" ]; then \
 
 # ---------- Optional: GCP Managed Kafka auth (SASL/OAUTHBEARER) ----------
 # Build with --build-arg INCLUDE_GCP_IAM=true to include.
-# Downloads the release zip from googleapis/managedkafka GitHub releases,
-# which bundles the login handler JAR and all transitive dependencies.
+# Uses Maven to resolve the handler's full transitive dependency tree,
+# then dynamically strips any JAR already provided by the Kafka distribution.
+# Maven + JDK are only installed when needed and are discarded with this
+# throwaway build stage (only /opt/auth-libs/ is copied to the runtime image).
+COPY docker/gcp-auth-deps.pom.xml /tmp/gcp-auth-deps.pom.xml
 RUN if [ "$INCLUDE_GCP_IAM" = "true" ]; then \
-      wget -q https://github.com/googleapis/managedkafka/releases/download/v${GCP_IAM_VERSION}/release-and-dependencies.zip \
-           -O /tmp/gcp-auth.zip && \
-      unzip -j /tmp/gcp-auth.zip -d /opt/auth-libs/ && \
-      rm /tmp/gcp-auth.zip; \
+      apk add --no-cache maven openjdk21-jdk && \
+      mvn -f /tmp/gcp-auth-deps.pom.xml \
+          dependency:copy-dependencies \
+          -Dgcp.iam.version=${GCP_IAM_VERSION} \
+          -DoutputDirectory=/tmp/gcp-all-deps \
+          -DincludeScope=runtime \
+          -q && \
+      # Build set of artifact base-names already in the Kafka distribution
+      for jar in /var/tmp/kafka_${SCALA_VERSION}-${KAFKA_VERSION}/libs/*.jar; do \
+        basename "$jar" | sed 's/-[0-9].*//' ; \
+      done | sort -u > /tmp/kafka-provided.txt && \
+      # Copy only JARs whose artifact name is NOT already provided by Kafka
+      for jar in /tmp/gcp-all-deps/*.jar; do \
+        base=$(basename "$jar" | sed 's/-[0-9].*//') && \
+        if ! grep -qx "$base" /tmp/kafka-provided.txt; then \
+          cp "$jar" /opt/auth-libs/ ; \
+        fi ; \
+      done && \
+      rm -rf /tmp/gcp-all-deps /tmp/kafka-provided.txt ; \
     fi
 
 # ============================================================================

@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.snowflake.kafka.testing</groupId>
+  <artifactId>gcp-auth-deps</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+  <description>
+    Resolver POM for the GCP Managed Kafka auth handler.
+    Maven resolves the full transitive tree; the Dockerfile then strips
+    any JAR already provided by the Kafka distribution.
+  </description>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.cloud.hosted.kafka</groupId>
+      <artifactId>managed-kafka-auth-login-handler</artifactId>
+      <version>${gcp.iam.version}</version>
+    </dependency>
+  </dependencies>
+  <!-- The handler POM pulls kafka-schema-registry-client from Confluent -->
+  <repositories>
+    <repository>
+      <id>confluent</id>
+      <url>https://packages.confluent.io/maven/</url>
+    </repository>
+  </repositories>
+</project>
